@@ -28,6 +28,7 @@ and the face all run on the board.
 | **Touch** | Tap for volume and brightness faders. Settings persist across reboots. |
 | **Brain** | Intent rules, memory notes, a mood, and the occasional unprompted remark. |
 | **Calculator** | Full expressions, powers, roots, trig, logs, percentages, statistics and standard form. |
+| **Spelling** | "How do you spell necessary?" says the letters out loud. |
 | **Alarm** | One alarm or timer, optional daily repeat, chime and spoken wake-up. Persisted. |
 | **Clock** | PCF85063 RTC. Time and date survive power loss. |
 
@@ -99,6 +100,7 @@ next sentence for six seconds.
 | "Hey Bumble, what is sine of 30?" | "That is 0.5." |
 | "Hey Bumble, increase 80 by 15 percent." | "That is 92." |
 | "Hey Bumble, mean of 3 4 5 6." | "That is 4.5." |
+| "Hey Bumble, how do you spell necessary?" | "Necessary is spelled en, ee, see..." |
 | "Hey Bumble, remember that the spare key is in the drawer." | Stored in NVS. |
 | "Hey Bumble, what do you remember?" | Reads the notes back. |
 | "Hey Bumble, how many times have we talked?" | Conversation count. |
@@ -115,10 +117,30 @@ GCSE-friendly, and spoken rather than typed.
 - **Logs**: `log 1000` is base 10, `ln 100` is natural.
 - **Factorials**: `5!`, `5 factorial`.
 - **Constants**: `pi`, `e`.
+- **Fractions**: `3 over 4 plus 1 over 2`. Clean fractions are spoken as well as
+  the decimal: "1.25, or 1 and 1 over 4".
+- **Rounding**: `round 3.14159 to 2 decimal places`, `round 1234 to 3 significant figures`,
+  `round 456 to the nearest 100`.
+- **Bounds**: `upper bound of 3.4 to 1 decimal place`, `lower bound`, `error interval`.
+- **Ratio**: `share 120 in the ratio 2 3`, `simplify the ratio 12 18`.
+- **Number theory**: `hcf of 12 and 18`, `lcm of 4 and 6`, `prime factors of 84`,
+  `is 17 prime`.
+- **Units**: `5 km in miles`, `20 c to f`, `3 hours in minutes`, `2.5 kg in pounds`,
+  `10 inches in cm`.
 - **Statistics**: `mean of 3 4 5 6`, `median of ...`, `mode of ...`, `range of ...`.
+- **Quartiles**: `interquartile range of 3 1 4 2 5 6 7`, `quartiles of ...`.
+- **Probability**: `probability of 3 heads in 5 flips`, `probability of rolling a 6`.
+- **Quadratic**: `quadratic 1 5 6` means x squared plus 5x plus 6 equals zero.
+- **Simultaneous**: `simultaneous 2 3 12 1 -1 1` means 2x+3y=12 and x-y=1.
+- **Sequences**: `nth term of 3 7 11`, `next term of 2 6 18`.
+- **Shapes**: `area of a circle radius 5`, `circumference of a circle diameter 10`,
+  `area of a triangle base 6 height 4`, `volume of a cylinder radius 3 height 5`,
+  `volume of a sphere radius 3`.
+- **Sine and cosine rules**: `sine rule 7 30 40`, `cosine rule 5 7 60`.
+- **Surds**: `simplify root 72` gives "6 root 2".
 - **Pythagoras**: `hypotenuse 3 4` or `pythagoras 6 8`.
-- **Standard form**: `3.2 times 10 to the power of 5`. Results at 1e10 and above are
-  spoken as "X times ten to the power of N".
+- **Standard form**: `write 320000 in standard form`, `write 0.00042 in standard form`.
+  Results at 1e10 and above are spoken as "X times ten to the power of N".
 - **Big numbers**: double precision, so around 15 significant digits.
 
 Trigonometry uses degrees unless the sentence says "radians". Only real numbers are

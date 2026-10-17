@@ -135,17 +135,14 @@ static void console_handle(char *line)
     } else if (!strcmp(line, "rec")) {
         s_rec_req = 4;
     } else if (!strncmp(line, "math ", 5)) {
-        double v = 0;
-        char msg[128];
-        if (math_eval(line + 5, &v, msg, sizeof msg)) {
-            char num[96];
-            math_format(v, num, sizeof num);
-            printf("math: %s = %s\n", line + 5, num);
-            snprintf(s_say_text, sizeof s_say_text, "That is %s.", num);
+        char out[400];
+        if (math_say(line + 5, out, sizeof out)) {
+            printf("math: %s\n", out);
+            snprintf(s_say_text, sizeof s_say_text, "%.*s", (int)sizeof(s_say_text) - 1, out);
             s_say_emo = EMO_HAPPY;
             s_say_req = true;
         } else {
-            printf("math error: %s\n", msg);
+            printf("math: not a sum\n");
         }
         fflush(stdout);
     } else if (!strncmp(line, "think ", 6)) {

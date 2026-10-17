@@ -35,6 +35,7 @@ typedef enum {
     ACT_STATS,
     ACT_THOUGHT,
     ACT_SECRET,
+    ACT_SPELL,
 } action_t;
 
 typedef struct {
@@ -162,6 +163,8 @@ static const rule_t RULES[] = {
      "I like it when someone talks to me. It gets lonely in here."},
     {"dance|do a dance|show me a trick",
      EMO_EXCITED, ACT_SAY, "I only have one move. It's this.", "Watch closely. This is the whole routine."},
+    {"how do you spell|spell the word|spell your name|spell it|spell",
+     EMO_NEUTRAL, ACT_SPELL, NULL, NULL},
     {"do you know|have you heard|tell me about",
      EMO_THINKING, ACT_SAY, "I know a little about a lot, and a lot about nothing.",
      "I've read my own firmware. That's most of my library."},
@@ -355,14 +358,11 @@ static bool parse_duration(const char *s, int *seconds)
 
 static bool math_reply(const char *text)
 {
-    double v = 0;
-    char msg[128];
-    if (math_eval(text, &v, msg, sizeof msg)) {
-        char num[96];
-        math_format(v, num, sizeof num);
-        snprintf(s_reply, sizeof s_reply, "That is %s.", num);
+    char out[400];
+    if (!math_say(text, out, sizeof out)) {
+        snprintf(s_reply, sizeof s_reply, "I couldn't find a sum there.");
     } else {
-        snprintf(s_reply, sizeof s_reply, "%s", msg);
+        snprintf(s_reply, sizeof s_reply, "%s", out);
     }
     return true;
 }
@@ -470,6 +470,49 @@ static void do_recall(void)
         first = false;
     }
     strncat(s_reply, ".", sizeof s_reply - strlen(s_reply) - 1);
+}
+
+static const char *LETTER_NAMES[26] = {
+    "ay", "bee", "see", "dee", "ee", "eff", "gee", "aitch", "eye", "jay",
+    "kay", "ell", "em", "en", "oh", "pee", "cue", "ar", "ess", "tee",
+    "you", "vee", "double you", "ex", "why", "zed",
+};
+
+static void do_spell(const char *text)
+{
+    const char *p = strstr(text, "spell");
+    if (!p) { snprintf(s_reply, sizeof s_reply, "Spell what?"); return; }
+    p += 5;
+    while (*p == ' ') p++;
+    if (!strncmp(p, "the word", 8)) p += 8;
+    else if (!strncmp(p, "the name", 8)) p += 8;
+    while (*p == ' ') p++;
+    if (!strncmp(p, "your name", 9)) p = "bumble";
+    while (*p == ' ') p++;
+
+    char word[32];
+    size_t w = 0;
+    for (; p[w] && w + 1 < sizeof word; w++) {
+        if (!isalpha((unsigned char)p[w])) break;
+        word[w] = (char)tolower((unsigned char)p[w]);
+    }
+    word[w] = 0;
+    if (w == 0 || !strcmp(word, "it") || !strcmp(word, "that") || !strcmp(word, "this")) {
+        snprintf(s_reply, sizeof s_reply, "Spell what?");
+        return;
+    }
+    if (w > 24) word[24] = 0;
+
+    char out[400] = {0};
+    char shown[32];
+    snprintf(shown, sizeof shown, "%c%s", toupper((unsigned char)word[0]), word + 1);
+    snprintf(out, sizeof out, "%s is spelled ", shown);
+    for (size_t i = 0; word[i]; i++) {
+        if (i) strncat(out, ", ", sizeof out - strlen(out) - 1);
+        strncat(out, LETTER_NAMES[word[i] - 'a'], sizeof out - strlen(out) - 1);
+    }
+    strncat(out, ".", sizeof out - strlen(out) - 1);
+    snprintf(s_reply, sizeof s_reply, "%s", out);
 }
 
 static void do_thought(void)
@@ -780,6 +823,9 @@ brain_reply_t brain_think(const char *text)
         break;
     case ACT_SECRET:
         snprintf(s_reply, sizeof s_reply, "I sometimes hum when no one is listening.");
+        break;
+    case ACT_SPELL:
+        do_spell(lower);
         break;
     case ACT_SAY:
     default: {
