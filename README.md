@@ -24,7 +24,7 @@ and the face all run on the board.
 | **Wake word** | "Hey Bumble" or just "Bumble". Other speech is ignored. |
 | **Speech in** | BabyTalk's 4-bit Citrinet-256, 6 MB, read in place from flash. |
 | **Speech out** | sanoTTS `nano` voice, 24 kHz, ~0.3x real time. |
-| **Face** | Ten emotions, breathing, blinking, glances, winks, yawns, a talking mouth, sparkles, hearts, Zs, tears. |
+| **Face** | Ten emotions on a shaded yellow sphere, with catchlights, rim light, breathing, blinking, glances, winks, yawns and a talking mouth. |
 | **Touch** | Tap for volume and brightness faders. Settings persist across reboots. |
 | **Brain** | Intent rules, memory notes, a mood, and the occasional unprompted remark. |
 | **Calculator** | Full expressions, powers, roots, trig, logs, percentages, statistics and standard form. |

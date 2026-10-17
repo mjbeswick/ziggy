@@ -24,6 +24,11 @@ bool ui_controls_visible(void);
 void ui_set_volume(int v);
 void ui_set_brightness(int v);
 
+// Dim the panel for idle sleep without changing the saved setting.
+void ui_dim(bool dim);
+// Small line under the brand: "ALARM 7:30 AM", empty for none.
+void ui_set_alarm(const char *text);
+
 #ifdef __cplusplus
 }
 #endif

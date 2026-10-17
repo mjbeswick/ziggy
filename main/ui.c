@@ -20,11 +20,18 @@
 #define BAR_VOL_Y (PANEL_Y + 62)
 #define BAR_LUM_Y (PANEL_Y + 112)
 
-static lv_obj_t *s_brand, *s_status, *s_caption;
+static lv_obj_t *s_brand, *s_status, *s_caption, *s_alarm;
 static lv_obj_t *s_panel;
 static int s_volume = 72;
 static int s_brightness = 90;
 static bool s_prefs_dirty;
+static int s_drag;                 // 0 none, 1 volume, 2 light
+static bool s_dimmed;
+static char s_alarm_last[64];
+static uint32_t s_touch_ms;
+static uint32_t s_change_ms;
+
+static void upper_ascii(char *dst, size_t n, const char *src);
 
 static void prefs_load(void)
 {
@@ -64,14 +71,34 @@ void ui_set_brightness(int v)
     if (v < 15) v = 15;
     if (v > 100) v = 100;
     s_brightness = v;
-    bsp_display_brightness_set(v);
+    if (!s_dimmed) bsp_display_brightness_set(v);
     s_prefs_dirty = true;
     prefs_save();
 }
-static int s_drag;                 // 0 none, 1 volume, 2 light
-static uint32_t s_touch_ms;
-static uint32_t s_change_ms;
 
+void ui_dim(bool dim)
+{
+    if (dim == s_dimmed) return;
+    s_dimmed = dim;
+    int b = dim ? (s_brightness * 25 / 100) : s_brightness;
+    if (b < 5) b = 5;
+    bsp_display_brightness_set(b);
+}
+
+void ui_set_alarm(const char *text)
+{
+    if (!s_alarm) return;
+    char buf[64];
+    if (text && text[0]) snprintf(buf, sizeof buf, "ALARM %s", text);
+    else buf[0] = 0;
+    char up[64];
+    upper_ascii(up, sizeof up, buf);
+    if (!strcmp(up, s_alarm_last)) return;
+    snprintf(s_alarm_last, sizeof s_alarm_last, "%s", up);
+    bsp_display_lock(-1);
+    lv_label_set_text(s_alarm, up);
+    bsp_display_unlock();
+}
 static void upper_ascii(char *dst, size_t n, const char *src)
 {
     size_t i = 0;
@@ -173,7 +200,7 @@ static void panel_draw(lv_event_t *e)
         lv_draw_rect(L, &d, &track);
 
         lv_area_t on = {BAR_X, y - 4, BAR_X + fill, y + 4};
-        d.bg_color = amber;
+        d.bg_color = (s_drag == i + 1) ? lv_color_hex(0xFFE08A) : amber;
         lv_draw_rect(L, &d, &on);
 
         lv_area_t knob = {BAR_X + fill - 8, y - 9, BAR_X + fill + 8, y + 9};
@@ -191,16 +218,17 @@ void ui_show_controls(bool show)
 {
     if (!s_panel) return;
     if (show) {
-        lv_obj_remove_flag(s_panel, LV_OBJ_FLAG_HIDDEN);
+        ui_dim(false);
+        lv_obj_set_hidden(s_panel, false);
         lv_obj_move_foreground(s_panel);
-        if (s_caption) lv_obj_add_flag(s_caption, LV_OBJ_FLAG_HIDDEN);
-        if (s_status) lv_obj_add_flag(s_status, LV_OBJ_FLAG_HIDDEN);
+        if (s_caption) lv_obj_set_hidden(s_caption, true);
+        if (s_status) lv_obj_set_hidden(s_status, true);
         s_touch_ms = lv_tick_get();
         lv_obj_invalidate(s_panel);
     } else {
-        lv_obj_add_flag(s_panel, LV_OBJ_FLAG_HIDDEN);
-        if (s_caption) lv_obj_remove_flag(s_caption, LV_OBJ_FLAG_HIDDEN);
-        if (s_status) lv_obj_remove_flag(s_status, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_set_hidden(s_panel, true);
+        if (s_caption) lv_obj_set_hidden(s_caption, false);
+        if (s_status) lv_obj_set_hidden(s_status, false);
         s_drag = 0;
         prefs_save();
     }
@@ -208,7 +236,7 @@ void ui_show_controls(bool show)
 
 bool ui_controls_visible(void)
 {
-    return s_panel && !lv_obj_has_flag(s_panel, LV_OBJ_FLAG_HIDDEN);
+    return s_panel && !lv_obj_is_hidden(s_panel);
 }
 
 static int x_to_value(int x, int lo)
@@ -289,7 +317,7 @@ static void build_panel(lv_obj_t *scr)
     lv_obj_set_scrollable(s_panel, false);
     lv_obj_set_clickable(s_panel, false);
     lv_obj_add_event_cb(s_panel, panel_draw, LV_EVENT_DRAW_MAIN, NULL);
-    lv_obj_add_flag(s_panel, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_hidden(s_panel, true);
 }
 
 void ui_init(void)
@@ -317,6 +345,11 @@ void ui_init(void)
     lv_label_set_long_mode(s_caption, LV_LABEL_LONG_MODE_DOTS);
     lv_obj_set_width(s_caption, 320);
     lv_obj_align(s_caption, LV_ALIGN_TOP_MID, 0, 374);
+
+    s_alarm = lv_label_create(scr);
+    lv_label_set_text(s_alarm, "");
+    style_label(s_alarm, &lv_font_unscii_8, lv_color_hex(0x8A6A2A), 2);
+    lv_obj_align(s_alarm, LV_ALIGN_TOP_MID, 0, 58);
 
     s_status = lv_label_create(scr);
     lv_label_set_text(s_status, "");

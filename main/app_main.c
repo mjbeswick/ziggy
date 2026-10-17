@@ -81,6 +81,7 @@ static void chime(void)
 
 static void ring_alarm(void)
 {
+    ui_dim(false);
     audio_mic_stop();
     ui_status("ALARM");
     face_set_emotion(EMO_EXCITED, 1.0f);
@@ -103,6 +104,7 @@ static void ring_alarm(void)
 
 static void speak_text(const char *text, emo_t emo, float intensity, int hold_ms)
 {
+    ui_dim(false);
     face_set_emotion(emo, intensity);
     ui_status("SPEAKING");
     ui_caption(text);
@@ -295,6 +297,7 @@ static void app_task(void *arg)
 
     for (;;) {
         if (s_hold_emo) {
+            ui_dim(false);
             ui_status(emo_name(face_emotion()));
             last_voice = esp_timer_get_time();
             vTaskDelay(pdMS_TO_TICKS(100));
@@ -313,6 +316,15 @@ static void app_task(void *arg)
 
         bool sleeping = (esp_timer_get_time() - last_voice) > 300000000LL;
         ui_status(sleeping ? "SLEEPING" : "STANDBY");
+        char aline[64];
+        if (alarm_active()) {
+            snprintf(aline, sizeof aline, "%s %s", alarm_is_timer() ? "TIMER" : "ALARM",
+                     alarm_describe());
+        } else {
+            aline[0] = 0;
+        }
+        ui_set_alarm(aline);
+        ui_dim(sleeping && !ui_controls_visible());
         if (!s_hold_emo) face_set_emotion(sleeping ? EMO_SLEEPY : EMO_NEUTRAL, 1.0f);
         face_set_level(0);
         if (audio_mic_start() != 0) {
@@ -389,6 +401,7 @@ static void app_task(void *arg)
 
         // --- capture ---------------------------------------------------------
         ui_status("LISTENING");
+        ui_dim(false);
         face_set_emotion(EMO_LISTENING, 1.0f);
         int n = 0;
         for (int i = 0; i < PREROLL; i++) {

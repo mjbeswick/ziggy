@@ -177,6 +177,26 @@ static void glyph(lv_layer_t *L, const lv_font_t *font, const char *txt,
     lv_draw_label(L, &d, &a);
 }
 
+static void face_disc(lv_layer_t *L, int cx, int cy, int r)
+{
+    lv_area_t a = {cx - r, cy - r, cx + r - 1, cy + r - 1};
+    lv_draw_rect_dsc_t d;
+    lv_draw_rect_dsc_init(&d);
+    d.radius = LV_RADIUS_CIRCLE;
+    d.bg_opa = LV_OPA_COVER;
+    d.border_opa = LV_OPA_TRANSP;
+    d.bg_color = lv_color_hex(0xFFDD5A);
+    d.bg_grad.dir = LV_GRAD_DIR_VER;
+    d.bg_grad.stops_count = 2;
+    d.bg_grad.stops[0].color = lv_color_hex(0xFFDF66);
+    d.bg_grad.stops[0].opa = LV_OPA_COVER;
+    d.bg_grad.stops[0].frac = 0;
+    d.bg_grad.stops[1].color = lv_color_hex(0xF2B300);
+    d.bg_grad.stops[1].opa = LV_OPA_COVER;
+    d.bg_grad.stops[1].frac = 255;
+    lv_draw_rect(L, &d, &a);
+}
+
 static void heart(lv_layer_t *L, int x, int y, int s, lv_color_t c, lv_opa_t opa)
 {
     disc(L, x - s / 2, y - s / 3, s / 2, s / 2, c, opa);
@@ -257,14 +277,16 @@ static void draw_face(lv_event_t *e)
         arc(L, cx, cy, R + 5, 8, yellow, (lv_opa_t)(p->glow * 22), 0, 360, false);
         arc(L, cx, cy, R + 11, 4, yellow, (lv_opa_t)(p->glow * 12), 0, 360, false);
     }
-    disc(L, cx, cy, R, R, yellow, 255);
-    arc(L, cx, cy, R, 2, shade, 200, 0, 360, false);
+    face_disc(L, cx, cy, R);
+    arc(L, cx, cy, R, 2, shade, 230, 0, 360, false);
+    arc(L, cx, cy, R - 3, 4, cream, 80, 205, 265, true);   // rim light
+    arc(L, cx, cy, R - 4, 6, shade, 55, 25, 155, false);   // underside shade
 
     // Blush.
     if (p->blush > 0.02f) {
-        lv_opa_t bo = (lv_opa_t)(p->blush * 90);
-        disc(L, cx - 78, cy + 28, 18, 10, lv_color_hex(0xFF8A3C), bo);
-        disc(L, cx + 78, cy + 28, 18, 10, lv_color_hex(0xFF8A3C), bo);
+        lv_opa_t bo = (lv_opa_t)(p->blush * 75);
+        disc(L, cx - 76, cy + 30, 22, 12, lv_color_hex(0xFF9A48), bo);
+        disc(L, cx + 76, cy + 30, 22, 12, lv_color_hex(0xFF9A48), bo);
     }
 
     // Eyes.
@@ -280,16 +302,22 @@ static void draw_face(lv_event_t *e)
         float open = closed ? 0 : p->eye_open;
 
         if (p->eye_curve > 0.35f) {                 // happy ^ ^
+            int w = (int)(er * 1.4f);
+            line(L, ex - w, ey + 6, ex - w / 2, ey - 3, 5, ink, 255);
+            line(L, ex - w / 2, ey - 3, ex + w / 2, ey - 3, 5, ink, 255);
+            line(L, ex + w / 2, ey - 3, ex + w, ey + 6, 5, ink, 255);
+        } else if (open < (p->eye_open * 0.3f)) {    // closed, a soft curve
             int w = (int)(er * 1.35f);
-            line(L, ex - w, ey + 4, ex, ey - 5, 4, ink, 255);
-            line(L, ex, ey - 5, ex + w, ey + 4, 4, ink, 255);
-        } else if (open < (p->eye_open * 0.3f)) {    // closed
-            line(L, ex - (int)(er * 1.35f), ey, ex + (int)(er * 1.35f), ey,
-                 4, ink, 255);
+            line(L, ex - w, ey - 1, ex, ey + 3, 4, ink, 255);
+            line(L, ex, ey + 3, ex + w, ey - 1, 4, ink, 255);
         } else {
             disc(L, ex, ey, er, (int)(er * open), ink, 255);
+            if (er > 5) {                            // catchlight
+                disc(L, ex - er / 3, ey - er / 3, er / 4, er / 4, cream, 210);
+            }
             if (open > 1.02f) {                      // wide-eyed
                 disc(L, ex, ey, er + 1, (int)((er + 1) * open), ink, 255);
+                disc(L, ex - er / 3, ey - er / 3, er / 3, er / 3, cream, 220);
             }
         }
         if (p->eye_curve < -0.15f) {                 // sad lid
@@ -327,6 +355,13 @@ static void draw_face(lv_event_t *e)
     } else if (p->mouth_curve < -0.18f) {
         arc(L, mx, my + (int)(18 * s), (int)(36 * mw / 100.0f * s), 5, ink, 255,
             208, 332, true);
+    } else if (p->extra == EX_QUESTION) {
+        int half = (int)(p->mouth_w * 24 * s);
+        int amp = (int)(5 * s);
+        line(L, mx - half, my, mx - half / 2, my - amp, 4, ink, 255);
+        line(L, mx - half / 2, my - amp, mx, my, 4, ink, 255);
+        line(L, mx, my, mx + half / 2, my + amp, 4, ink, 255);
+        line(L, mx + half / 2, my + amp, mx + half, my, 4, ink, 255);
     } else {
         int half = (int)(p->mouth_w * 26 * s);
         line(L, mx - half, my, mx + half, my, 4, ink, 255);
@@ -503,23 +538,24 @@ void face_tick(uint32_t now_ms)
         g.gesture = 1 + (rand() % 4);
         uint32_t dur = g.gesture == 3 ? 900 : 1100;
         g.gesture_until = now_ms + dur;
-        if (g.gesture == 1) g.glance = (rand() & 1) ? 13.0f : -13.0f;
-        if (g.gesture == 3) g.next_blink = now_ms + dur;   // yawn: eyes closed by mouth_open
+        if (g.gesture == 1) {
+            g.glance = (rand() & 1) ? 13.0f : -13.0f;
+            if (rand() % 3 == 0) {                       // sometimes a wink
+                g.wink = (rand() & 1) ? 1 : -1;
+                g.wink_until = now_ms + 380;
+            }
+        }
         if (g.gesture == 4) g.next_blink = now_ms + 120;   // wiggle with a blink
         g.next_gesture = now_ms + dur + 4500 + (uint32_t)(rand() % 6000);
     }
 
-    float gx = 0, gy = 0, gbrow = 0, gmouth = 0, god = 0;
+    float gx = 0;
     if (now_ms < g.gesture_until) {
-        float k2 = 1.0f;
         switch (g.gesture) {
-        case 1:  gx = g.glance; break;
-        case 2:  gbrow = 5.0f * sinf((g.gesture_until - now_ms) / 120.0f); break;
-        case 3:  gmouth = 0.55f; god = 0.0f; break;
-        case 4:  gx = 9.0f * sinf(now_ms / 70.0f); break;
+        case 1: gx = g.glance; break;
+        case 4: gx = 9.0f * sinf(now_ms / 70.0f); break;
         default: break;
         }
-        (void)k2;
     }
 
     // Ease parameters toward the target.
@@ -532,17 +568,23 @@ void face_tick(uint32_t now_ms)
     c->eye_dy = lerpf(c->eye_dy, t->eye_dy, k);
     c->eye_curve = lerpf(c->eye_curve, t->eye_curve, k);
     c->look_x = lerpf(c->look_x, t->look_x + gx, k);
-    c->look_y = lerpf(c->look_y, t->look_y + gy, k);
+    c->look_y = lerpf(c->look_y, t->look_y, k);
     c->brow = lerpf(c->brow, t->brow, k);
-    c->brow_angle = lerpf(c->brow_angle, t->brow_angle + gbrow * 0.02f, k);
+    c->brow_angle = lerpf(c->brow_angle, t->brow_angle, k);
     c->mouth_curve = lerpf(c->mouth_curve, t->mouth_curve, k);
     c->mouth_w = lerpf(c->mouth_w, t->mouth_w, k);
-    c->mouth_open = lerpf(c->mouth_open, t->mouth_open + gmouth, k);
+    c->mouth_open = lerpf(c->mouth_open, t->mouth_open, k);
     c->mouth_y = lerpf(c->mouth_y, t->mouth_y, k);
     c->glow = lerpf(c->glow, t->glow, k);
     c->bounce = lerpf(c->bounce, t->bounce, k);
     c->blush = lerpf(c->blush, t->blush, k);
     c->extra = t->extra;
+
+    // Gesture overrides, after the easing so they read clearly.
+    if (now_ms < g.gesture_until) {
+        if (g.gesture == 2) { c->brow = 0.95f; c->brow_angle = -0.35f; }
+        if (g.gesture == 3) { c->eye_open = 0.04f; c->mouth_open = 0.62f; }
+    }
 
     // Talking mouth: fast attack, gentle release.
     float mt = g.mouth_talk;
