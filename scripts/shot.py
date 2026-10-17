@@ -32,7 +32,7 @@ def main():
     # Opening the port resets the board; wait for the app console.
     deadline = time.time() + 12
     while time.time() < deadline:
-        if b"bumble console" in ser.readline():
+        if b"ziggy console" in ser.readline():
             break
     time.sleep(0.5)
     ser.reset_input_buffer()

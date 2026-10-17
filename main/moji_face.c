@@ -1,4 +1,4 @@
-// Bumble's face: a big yellow smiley with black ink, drawn as vectors.
+// Ziggy's face: a big yellow smiley with black ink, drawn as vectors.
 //
 // One LVGL object, one draw callback.  Emotions are parameter presets; the
 // tick eases toward them and adds breathing, blinking, eye wander, idle

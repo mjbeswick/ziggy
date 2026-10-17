@@ -1,4 +1,4 @@
-// Bumble's offline brain: a rule table, a little arithmetic, a few memories,
+// Ziggy's offline brain: a rule table, a little arithmetic, a few memories,
 // an alarm, and manners.  Longest keyword match wins, so "how are you" beats
 // "you".  No network.
 #include "brain.h"
@@ -56,8 +56,8 @@ static const rule_t RULES[] = {
      EMO_HAPPY, ACT_SAY, "Functioning within normal parameters. Thank you for asking.",
      "Better than the coffee machine. That is a low bar."},
     {"your name|who are you|what are you|introduce yourself",
-     EMO_NEUTRAL, ACT_SAY, "I'm Bumble. I live in this little round window, and I look after you.",
-     "Bumble. Small, round, and permanently curious."},
+     EMO_NEUTRAL, ACT_SAY, "I'm Ziggy. I live in this little round window, and I look after you.",
+     "Ziggy. Small, round, and permanently curious."},
     {"what can you do|what do you do|help me|your purpose",
      EMO_HAPPY, ACT_SAY, "I listen, I talk, I solve maths, I spell words, and I keep the lights on.",
      "I can set alarms, solve equations, remember things, and worry quietly."},
@@ -487,7 +487,7 @@ static void do_spell(const char *text)
     if (!strncmp(p, "the word", 8)) p += 8;
     else if (!strncmp(p, "the name", 8)) p += 8;
     while (*p == ' ') p++;
-    if (!strncmp(p, "your name", 9)) p = "bumble";
+    if (!strncmp(p, "your name", 9)) p = "ziggy";
     while (*p == ' ') p++;
 
     char word[32];

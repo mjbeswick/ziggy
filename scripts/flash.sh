@@ -56,7 +56,7 @@ grep -E "Chip type|MAC|Detected flash" /tmp/moji_flash_id.txt
 
 if [ "$MODE" = "app" ]; then
     python -m esptool --chip esp32s3 --port "$PORT" --baud 921600 \
-        write_flash 0x10000 build/bumble.bin
+        write_flash 0x10000 build/ziggy.bin
     exit 0
 fi
 
@@ -67,5 +67,5 @@ python -m esptool --chip esp32s3 --port "$PORT" --baud 921600 \
     write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB \
     0x0      build/bootloader/bootloader.bin \
     0x8000   build/partition_table/partition-table.bin \
-    0x10000  build/bumble.bin \
+    0x10000  build/ziggy.bin \
     0x510000 "$MODEL"

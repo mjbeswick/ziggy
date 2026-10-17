@@ -24,4 +24,4 @@ endif()
 set(SANOTTS_BSS_PSRAM 1)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(bumble)
+project(ziggy)

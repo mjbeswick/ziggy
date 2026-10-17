@@ -1,27 +1,20 @@
-# Bumble
+# Ziggy
 
 **A tiny, offline voice companion for the Waveshare ESP32-S3 1.75" round AMOLED.**
 
-Say **"Hey Bumble"**, ask it something, and a big yellow smiley answers out loud.
+Say **"Hey Ziggy"**, ask it something, and a big yellow smiley answers out loud.
 No cloud, no WiFi, no account. Speech recognition, speech synthesis, an alarm clock
 and the face all run on the board.
 
 <p align="center">
-  <img src="docs/bumble-happy.png" width="220" alt="Bumble, happy">
-  <img src="docs/bumble-thinking.png" width="220" alt="Bumble, thinking">
-  <img src="docs/bumble-sleepy.png" width="220" alt="Bumble, sleepy">
-</p>
-
-<p align="center">
-  <img src="docs/bumble-neutral.png" width="220" alt="Bumble, neutral">
-  <img src="docs/bumble-panel.png" width="260" alt="Volume and brightness controls">
+  <img src="docs/ziggy-neutral.png" width="320" alt="Ziggy, neutral">
 </p>
 
 ## What it does
 
 | | |
 | --- | --- |
-| **Wake word** | "Hey Bumble" or just "Bumble". Other speech is ignored. |
+| **Wake word** | "Hey Ziggy" or just "Ziggy". Other speech is ignored. |
 | **Speech in** | BabyTalk's 4-bit Citrinet-256, 6 MB, read in place from flash. |
 | **Speech out** | sanoTTS `nano` voice, 24 kHz, ~0.3x real time. |
 | **Face** | Ten emotions on a shaded yellow sphere, with catchlights, rim light, breathing, blinking, glances, winks, yawns and a talking mouth. |
@@ -47,8 +40,8 @@ word, the memory, the timing, and the face.
 ### Build
 
 ```bash
-git clone https://github.com/mjbeswick/bumble.git
-cd bumble
+git clone https://github.com/mjbeswick/ziggy.git
+cd ziggy
 ./scripts/fetch_deps.sh          # BabyTalk + sanoTTS at pinned commits
 . ~/esp/esp-idf/export.sh
 idf.py set-target esp32s3
@@ -75,7 +68,7 @@ WANT_MAC=80:45:6b:33:cf:a8 ./scripts/flash.sh      # app, partition table, model
 | --- | --- |
 | `0x0` | bootloader (DIO) |
 | `0x8000` | partition table: 5 MB app, 6 MB model, 5 MB storage |
-| `0x10000` | `build/bumble.bin` |
+| `0x10000` | `build/ziggy.bin` |
 | `0x510000` | `third_party/babytalk/models/citrinet256_int4.mmrt` |
 
 For a noisy room, flash `citrinet256_noisy_int4.mmrt` instead.
@@ -87,24 +80,24 @@ next sentence for six seconds.
 
 | Say | Get |
 | --- | --- |
-| "Hey Bumble, what time is it?" | The time, from the RTC. |
-| "Hey Bumble, what is the date?" | "Today is Saturday, October 17, 2026." |
-| "Hey Bumble, set an alarm for 7:30." | Alarm, next occurrence. |
-| "Hey Bumble, set an alarm for 7:30 every day." | Daily alarm. |
-| "Hey Bumble, set a timer for 10 minutes." | Timer. |
-| "Hey Bumble, what alarm do I have?" | Spoken alarm or timer state. |
-| "Hey Bumble, cancel the alarm." | Cancels it. |
-| "Hey Bumble, what is twelve times four?" | "That is 48." |
-| "Hey Bumble, what is the square root of two?" | "That is 1.414213562." |
-| "Hey Bumble, what is 2 to the power of 100?" | Spoken standard form. |
-| "Hey Bumble, what is sine of 30?" | "That is 0.5." |
-| "Hey Bumble, increase 80 by 15 percent." | "That is 92." |
-| "Hey Bumble, mean of 3 4 5 6." | "That is 4.5." |
-| "Hey Bumble, how do you spell necessary?" | "Necessary is spelled en, ee, see..." |
-| "Hey Bumble, remember that the spare key is in the drawer." | Stored in NVS. |
-| "Hey Bumble, what do you remember?" | Reads the notes back. |
-| "Hey Bumble, how many times have we talked?" | Conversation count. |
-| "Hey Bumble, tell me a joke." | A joke. |
+| "Hey Ziggy, what time is it?" | The time, from the RTC. |
+| "Hey Ziggy, what is the date?" | "Today is Saturday, October 17, 2026." |
+| "Hey Ziggy, set an alarm for 7:30." | Alarm, next occurrence. |
+| "Hey Ziggy, set an alarm for 7:30 every day." | Daily alarm. |
+| "Hey Ziggy, set a timer for 10 minutes." | Timer. |
+| "Hey Ziggy, what alarm do I have?" | Spoken alarm or timer state. |
+| "Hey Ziggy, cancel the alarm." | Cancels it. |
+| "Hey Ziggy, what is twelve times four?" | "That is 48." |
+| "Hey Ziggy, what is the square root of two?" | "That is 1.414213562." |
+| "Hey Ziggy, what is 2 to the power of 100?" | Spoken standard form. |
+| "Hey Ziggy, what is sine of 30?" | "That is 0.5." |
+| "Hey Ziggy, increase 80 by 15 percent." | "That is 92." |
+| "Hey Ziggy, mean of 3 4 5 6." | "That is 4.5." |
+| "Hey Ziggy, how do you spell necessary?" | "Necessary is spelled en, ee, see..." |
+| "Hey Ziggy, remember that the spare key is in the drawer." | Stored in NVS. |
+| "Hey Ziggy, what do you remember?" | Reads the notes back. |
+| "Hey Ziggy, how many times have we talked?" | Conversation count. |
+| "Hey Ziggy, tell me a joke." | A joke. |
 
 ## Maths
 
@@ -186,7 +179,7 @@ uv run --with pyserial --with pillow scripts/shot.py shot.png
 ```
 ES7210 mic ── 16 kHz ── VAD ── Citrinet-256 (MMRT, both cores) ── text
                                                                   │
-                                                       "Bumble" in the text?
+                                                       "Ziggy" in the text?
                                                                   │
                                                              local brain
                                                                   │
@@ -232,7 +225,7 @@ third_party/   fetched: BabyTalk components, sanoTTS (git-ignored)
 resets. `flash.sh` scans all `/dev/cu.usbmodem*` for the MAC. For other tools, set
 `PORT`.
 
-**It answers the television.** Require the wake word; say "Hey Bumble". The CTC
+**It answers the television.** Require the wake word; say "Hey Ziggy". The CTC
 phrase score can be tightened in `app_main.c` (`r.score > -12`).
 
 **The time is wrong.** The RTC is seeded from the build timestamp on first boot.

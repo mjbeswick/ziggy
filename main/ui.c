@@ -335,7 +335,7 @@ void ui_init(void)
     face_create(scr);
 
     s_brand = lv_label_create(scr);
-    lv_label_set_text(s_brand, "BUMBLE");
+    lv_label_set_text(s_brand, "ZIGGY");
     style_label(s_brand, &lv_font_unscii_16, lv_color_hex(0x8A6A2A), 6);
     lv_obj_align(s_brand, LV_ALIGN_TOP_MID, 0, 34);
 

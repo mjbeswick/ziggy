@@ -1,4 +1,4 @@
-// GCSE-friendly arithmetic for Bumble.
+// GCSE-friendly arithmetic for Ziggy.
 //
 // Understands spoken numbers ("one hundred and five", "three point five"),
 // precedence, parentheses, powers, roots, factorials, percentages, standard

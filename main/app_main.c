@@ -30,7 +30,7 @@
 #include "tts_engine.h"
 #include "ui.h"
 
-#define TAG "bumble"
+#define TAG "ziggy"
 
 #define RATE 16000
 #define CHUNK 320           // 20 ms
@@ -199,7 +199,7 @@ static void console_task(void *arg)
     usb_serial_jtag_driver_config_t cfg = USB_SERIAL_JTAG_DRIVER_CONFIG_DEFAULT();
     usb_serial_jtag_driver_install(&cfg);
 
-    printf("\nbumble console: help | shot | panel | rec | say <text> | emo <0-9> | vol <0-100> | info\n");
+    printf("\nziggy console: help | shot | panel | rec | math <sum> | think <text> | say <text> | hold <0-9> | vol <0-100> | lum <15-100> | info\n");
     fflush(stdout);
 
     char line[256];
@@ -222,7 +222,7 @@ static void console_task(void *arg)
     }
 }
 
-static const char *WAKE_ALIASES[] = {"bumble", "bumbel", "bumbl", "bumbo", "bunble", "bamble", "bomble", "bimbel", NULL};
+static const char *WAKE_ALIASES[] = {"ziggy", "zigy", "zigi", "ziggie", "ziggi", "siggy", "ziki", NULL};
 
 static bool has_wake(const char *text)
 {
@@ -232,8 +232,8 @@ static bool has_wake(const char *text)
     return false;
 }
 
-// Copy `text` with the wake words removed.  "hey bumble, what time is it"
-// becomes "what time is it"; "what time is it, bumble" works too.
+// Copy `text` with the wake words removed.  "hey ziggy, what time is it"
+// becomes "what time is it"; "what time is it, ziggy" works too.
 static void strip_wake(const char *text, char *out, size_t n)
 {
     char tmp[1024];
@@ -246,7 +246,7 @@ static void strip_wake(const char *text, char *out, size_t n)
     }
     char *p;
     while ((p = strstr(tmp, "hey")) != NULL) memset(p, ' ', 3);
-    // Speech-to-text often drops the y: "he bumble".
+    // Speech-to-text often drops the y: "he ziggy".
     if (!strncmp(tmp, "he ", 3)) memset(tmp, ' ', 3);
     size_t j = 0;
     bool space = true;
@@ -281,10 +281,10 @@ static void app_task(void *arg)
 
     int y, mo, d, h, mi, sec;
     bool have_clock = board_rtc_read(&y, &mo, &d, &h, &mi, &sec);
-    const char *greet = !have_clock ? "Bumble online. Good to see you, Michael."
-                        : (h < 12 ? "Good morning, Michael. Bumble online."
-                                  : (h < 18 ? "Good afternoon, Michael. Bumble online."
-                                            : "Good evening, Michael. Bumble online."));
+    const char *greet = !have_clock ? "Ziggy online. Good to see you, Michael."
+                        : (h < 12 ? "Good morning, Michael. Ziggy online."
+                                  : (h < 18 ? "Good afternoon, Michael. Ziggy online."
+                                            : "Good evening, Michael. Ziggy online."));
     speak_text(greet, EMO_HAPPY, 1.0f, 900);
     face_set_emotion(EMO_NEUTRAL, 1.0f);
     ui_caption("");
@@ -510,7 +510,7 @@ void app_main(void)
         nvs_flash_init();
     }
 
-    ESP_LOGI(TAG, "booting Bumble");
+    ESP_LOGI(TAG, "booting Ziggy");
     ESP_LOGI(TAG, "internal free at start: %u", (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
 
     // The TTS arena wants one contiguous 84 KB block; take it before anything
@@ -545,12 +545,12 @@ void app_main(void)
 
     rc = stt_engine_open();
     ESP_LOGI(TAG, "stt_engine_open: %d", rc);
-    static const char *wake[] = {"bumble", "bumbel", "bumbl", "hey bumble"};
+    static const char *wake[] = {"ziggy", "zigy", "zigi", "ziggie", "hey ziggy"};
     stt_engine_set_phrase(wake, 4);
     ESP_LOGI(TAG, "internal free after init: %u, psram free: %u",
              (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
              (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
 
     xTaskCreatePinnedToCore(console_task, "console", 4096, NULL, 7, NULL, 1);
-    xTaskCreatePinnedToCore(app_task, "bumble", 12288, NULL, 6, NULL, 1);
+    xTaskCreatePinnedToCore(app_task, "ziggy", 12288, NULL, 6, NULL, 1);
 }

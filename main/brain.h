@@ -12,7 +12,7 @@ typedef struct {
     const char *reply;   // "" means: stay quiet
 } brain_reply_t;
 
-// Decide what Bumble says and how it feels.  The reply string stays valid
+// Decide what Ziggy says and how it feels.  The reply string stays valid
 // until the next call.
 brain_reply_t brain_think(const char *text);
 
