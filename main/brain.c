@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "alarm.h"
+#include "math_eval.h"
 #include "esp_timer.h"
 #include "nvs.h"
 #include "rtc.h"
@@ -146,7 +147,7 @@ static const rule_t RULES[] = {
      EMO_NEUTRAL, ACT_RECALL, NULL, NULL},
     {"forget everything|forget that|forget it all|forget all of it",
      EMO_NEUTRAL, ACT_FORGET, NULL, NULL},
-    {"plus|minus|times|divided by|multiplied by|take away",
+    {"plus|minus|times|divided by|multiplied by|take away|power of|squared|cubed|square root|cube root|sine|cosine|tangent|factorial|percent of|log of|natural log|log base|absolute value|raised to|hypotenuse|pythagoras",
      EMO_THINKING, ACT_MATH, NULL, NULL},
     {"tell me something|say something|talk to me",
      EMO_THINKING, ACT_SAY, "I've been watching the light on the screen. It's very consistent.",
@@ -352,62 +353,18 @@ static bool parse_duration(const char *s, int *seconds)
     return *seconds > 0;
 }
 
-static bool do_math(const char *s, char *out, size_t n)
+static bool math_reply(const char *text)
 {
-    static const struct { const char *w; char op; } OPS[] = {
-        {"divided by", '/'}, {"multiplied by", '*'}, {"take away", '-'},
-        {"times", '*'}, {"over", '/'}, {"plus", '+'}, {"minus", '-'},
-        {"add", '+'}, {"subtract", '-'},
-    };
-    for (size_t i = 0; i < sizeof OPS / sizeof OPS[0]; i++) {
-        const char *p = strstr(s, OPS[i].w);
-        if (!p) continue;
-
-        // Last number before the operator, first number after it.  Both may be
-        // digits or words ("twelve times four").
-        char left[128];
-        size_t ln = (size_t)(p - s);
-        if (ln >= sizeof left) ln = sizeof left - 1;
-        memcpy(left, s, ln);
-        left[ln] = 0;
-
-        long a = 0, b = 0;
-        bool ha = false, hb = false;
-        size_t pos = 0;
-        for (;;) {
-            size_t before = pos;
-            int v = take_number(left, &pos);
-            if (v < 0) break;
-            a = v;
-            ha = true;
-            if (pos <= before) break;
-        }
-        size_t q = (size_t)(p + strlen(OPS[i].w) - s);
-        int vb = take_number(s, &q);
-        if (vb >= 0) {
-            b = vb;
-            hb = true;
-        }
-        if (!ha || !hb) continue;
-
-        long long r;
-        switch (OPS[i].op) {
-        case '+': r = a + b; break;
-        case '-': r = a - b; break;
-        case '*': r = (long long)a * b; break;
-        case '/':
-            if (b == 0) {
-                snprintf(out, n, "That would break arithmetic.");
-                return true;
-            }
-            r = a / b;
-            break;
-        default: continue;
-        }
-        snprintf(out, n, "That is %lld.", r);
-        return true;
+    double v = 0;
+    char msg[128];
+    if (math_eval(text, &v, msg, sizeof msg)) {
+        char num[96];
+        math_format(v, num, sizeof num);
+        snprintf(s_reply, sizeof s_reply, "That is %s.", num);
+    } else {
+        snprintf(s_reply, sizeof s_reply, "%s", msg);
     }
-    return false;
+    return true;
 }
 
 /* ---------------------------------------------------------------- notes */
@@ -679,9 +636,10 @@ brain_reply_t brain_think(const char *text)
             snprintf(s_reply, sizeof s_reply, "I didn't catch that. Say it again.");
             return (brain_reply_t){EMO_CONFUSED, s_reply};
         }
-        if (do_math(lower, s_reply, sizeof s_reply)) {
-            set_mood(EMO_HAPPY);
-            return (brain_reply_t){EMO_HAPPY, s_reply};
+        if (math_looks_like(lower)) {
+            math_reply(lower);
+            set_mood(EMO_THINKING);
+            return (brain_reply_t){EMO_THINKING, s_reply};
         }
 
         static const char *qs[] = {
@@ -734,9 +692,7 @@ brain_reply_t brain_think(const char *text)
         else snprintf(s_reply, sizeof s_reply, "You haven't said anything yet.");
         break;
     case ACT_MATH:
-        if (!do_math(lower, s_reply, sizeof s_reply)) {
-            snprintf(s_reply, sizeof s_reply, "I can do plus, minus, times and divided by.");
-        }
+        math_reply(lower);
         break;
     case ACT_ALARM_SET: {
         int seconds = 0, h = 0, m = 0;

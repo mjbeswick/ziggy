@@ -26,7 +26,8 @@ and the face all run on the board.
 | **Speech out** | sanoTTS `nano` voice, 24 kHz, ~0.3x real time. |
 | **Face** | Ten emotions, breathing, blinking, glances, winks, yawns, a talking mouth, sparkles, hearts, Zs, tears. |
 | **Touch** | Tap for volume and brightness faders. Settings persist across reboots. |
-| **Brain** | Intent rules, arithmetic, memory notes, a mood, and the occasional unprompted remark. |
+| **Brain** | Intent rules, memory notes, a mood, and the occasional unprompted remark. |
+| **Calculator** | Full expressions, powers, roots, trig, logs, percentages, statistics and standard form. |
 | **Alarm** | One alarm or timer, optional daily repeat, chime and spoken wake-up. Persisted. |
 | **Clock** | PCF85063 RTC. Time and date survive power loss. |
 
@@ -93,10 +94,35 @@ next sentence for six seconds.
 | "Hey Bumble, what alarm do I have?" | Spoken alarm or timer state. |
 | "Hey Bumble, cancel the alarm." | Cancels it. |
 | "Hey Bumble, what is twelve times four?" | "That is 48." |
+| "Hey Bumble, what is the square root of two?" | "That is 1.414213562." |
+| "Hey Bumble, what is 2 to the power of 100?" | Spoken standard form. |
+| "Hey Bumble, what is sine of 30?" | "That is 0.5." |
+| "Hey Bumble, increase 80 by 15 percent." | "That is 92." |
+| "Hey Bumble, mean of 3 4 5 6." | "That is 4.5." |
 | "Hey Bumble, remember that the spare key is in the drawer." | Stored in NVS. |
 | "Hey Bumble, what do you remember?" | Reads the notes back. |
 | "Hey Bumble, how many times have we talked?" | Conversation count. |
 | "Hey Bumble, tell me a joke." | A joke. |
+
+## Maths
+
+GCSE-friendly, and spoken rather than typed.
+
+- **Arithmetic**: `+ - * /`, precedence, brackets, negative numbers.
+- **Powers and roots**: `2 ^ 10`, `3 squared`, `2 cubed`, `square root of 2`, `cube root of 27`.
+- **Percentages**: `15% of 200`, `increase 80 by 15 percent`, `decrease 80 by 15%`.
+- **Trigonometry**: `sin 30`, `cosine of 60`, `tan 45`, inverses, degrees by default.
+- **Logs**: `log 1000` is base 10, `ln 100` is natural.
+- **Factorials**: `5!`, `5 factorial`.
+- **Constants**: `pi`, `e`.
+- **Statistics**: `mean of 3 4 5 6`, `median of ...`, `mode of ...`, `range of ...`.
+- **Pythagoras**: `hypotenuse 3 4` or `pythagoras 6 8`.
+- **Standard form**: `3.2 times 10 to the power of 5`. Results at 1e10 and above are
+  spoken as "X times ten to the power of N".
+- **Big numbers**: double precision, so around 15 significant digits.
+
+Trigonometry uses degrees unless the sentence says "radians". Only real numbers are
+supported: `sqrt -1` gets a polite refusal rather than an imaginary one.
 
 ## Touch
 
@@ -114,6 +140,7 @@ Connect at 115200 baud on the USB Serial/JTAG port.
 ```text
 help                     this list
 shot                     dump the screen as raw RGB565 (scripts/shot.py)
+math <sum>               evaluate a sum and speak the answer
 panel                    open the controls
 rec                      record 4 seconds and transcribe
 think <text>             run text through the brain and speak the reply

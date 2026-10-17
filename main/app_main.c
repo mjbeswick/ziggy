@@ -22,6 +22,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "lvgl.h"
+#include "math_eval.h"
 #include "moji_face.h"
 #include "rtc.h"
 #include "shot.h"
@@ -133,6 +134,20 @@ static void console_handle(char *line)
         shot_take();
     } else if (!strcmp(line, "rec")) {
         s_rec_req = 4;
+    } else if (!strncmp(line, "math ", 5)) {
+        double v = 0;
+        char msg[128];
+        if (math_eval(line + 5, &v, msg, sizeof msg)) {
+            char num[96];
+            math_format(v, num, sizeof num);
+            printf("math: %s = %s\n", line + 5, num);
+            snprintf(s_say_text, sizeof s_say_text, "That is %s.", num);
+            s_say_emo = EMO_HAPPY;
+            s_say_req = true;
+        } else {
+            printf("math error: %s\n", msg);
+        }
+        fflush(stdout);
     } else if (!strncmp(line, "think ", 6)) {
         brain_reply_t r = brain_think(line + 6);
         printf("reply [%s]: %s\n", emo_name(r.emotion), r.reply ? r.reply : "");
@@ -172,7 +187,7 @@ static void console_handle(char *line)
                (unsigned)si.model_bytes, (unsigned)si.cache_bytes);
         fflush(stdout);
     } else if (!strcmp(line, "help")) {
-        printf("shot | panel | rec | think <text> | say <text> | hold <0-9> | vol <0-100> | lum <15-100> | info\n");
+        printf("shot | panel | rec | math <sum> | think <text> | say <text> | hold <0-9> | vol <0-100> | lum <15-100> | info\n");
         fflush(stdout);
     }
 }
